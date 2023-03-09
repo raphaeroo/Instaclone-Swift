@@ -88,12 +88,10 @@ class LoginViewController: UIViewController {
     let header = UIView()
     header.clipsToBounds = true
     let backgroundImageView = UIImageView(image: UIImage(named: "gradient"))
-    
     header.addSubview(backgroundImageView)
     
     return header
   }()
-  
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -161,8 +159,33 @@ class LoginViewController: UIViewController {
     passwordField.resignFirstResponder()
     usernameEmailField.resignFirstResponder()
     
-    guard let usernameEMail = usernameEmailField.text, !usernameEmailField.state.isEmpty, let password = passwordField.text, !passwordField.state.isEmpty, password.count > 0 else {
+    guard let usernameEmail = usernameEmailField.text, !usernameEmail.isEmpty,
+          let password = passwordField.text, !password.isEmpty, password.count > 0 else {
       return
+    }
+    
+    var username: String?
+    var email: String?
+    
+    if usernameEmail.contains("@"), usernameEmail.contains(".") {
+      email = usernameEmail
+    } else {
+      username = usernameEmail
+    }
+    
+    AuthManager.shared.loginUser(username: username, email: email, password: password) { success in
+      DispatchQueue.main.async {
+        if success {
+          // USER LOGGED IN
+          self.dismiss(animated: true, completion: nil)
+        } else {
+          // error happened
+          let alert = UIAlertController(title: "Log in Error", message: "We were unable to log you in.", preferredStyle: .alert)
+          alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel))
+          
+          self.present(alert, animated: true)
+        }
+      }
     }
   }
   
@@ -186,7 +209,8 @@ class LoginViewController: UIViewController {
   
   @objc private func didTapCreateAccountButton() {
     let vc = RegistrationViewController()
-    present(vc, animated: true)
+    vc.title = "Create Account"
+    present(UINavigationController(rootViewController: vc), animated: true)
   }
 }
 
